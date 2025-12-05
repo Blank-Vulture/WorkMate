@@ -62,6 +62,20 @@ jobs:
       - name: Generate native code (prebuild)
         run: npx expo prebuild --platform android --clean
 
+      - name: Fix Gradle compatibility
+        run: |
+          # Fix foojay-resolver-convention plugin version for Gradle 8.8+ compatibility
+          SETTINGS_FILE="node_modules/@react-native/gradle-plugin/settings.gradle.kts"
+          if [ -f "$SETTINGS_FILE" ]; then
+            sed -i 's/version: "0.5.0"/version: "0.8.0"/g' "$SETTINGS_FILE"
+            echo "Updated foojay-resolver-convention to 0.8.0"
+          fi
+          
+          # Also fix in android/settings.gradle if exists
+          if [ -f "android/settings.gradle" ]; then
+            sed -i 's/0.5.0/0.8.0/g' "android/settings.gradle"
+          fi
+
       - name: Configure Release Signing
         run: |
           cd android
