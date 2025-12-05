@@ -42,6 +42,23 @@ async function initializeDatabase(database: SQLite.SQLiteDatabase): Promise<void
   try {
     await database.execAsync('ALTER TABLE settings ADD COLUMN standard_shift_break INTEGER DEFAULT 60;');
   } catch (e) { /* Column likely exists */ }
+
+  // Task Migrations
+  try {
+    await database.execAsync('ALTER TABLE tasks ADD COLUMN description TEXT;');
+  } catch (e) { /* Column likely exists */ }
+  try {
+    await database.execAsync('ALTER TABLE tasks ADD COLUMN status TEXT DEFAULT "todo";');
+  } catch (e) { /* Column likely exists */ }
+  try {
+    await database.execAsync('ALTER TABLE tasks ADD COLUMN priority TEXT DEFAULT "medium";');
+  } catch (e) { /* Column likely exists */ }
+  try {
+    await database.execAsync('ALTER TABLE tasks ADD COLUMN due_date TEXT;');
+  } catch (e) { /* Column likely exists */ }
+  try {
+    await database.execAsync('ALTER TABLE tasks ADD COLUMN completed_at TEXT;');
+  } catch (e) { /* Column likely exists */ }
 }
 
 export async function closeDatabase(): Promise<void> {
