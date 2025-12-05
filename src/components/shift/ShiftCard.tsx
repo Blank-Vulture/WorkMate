@@ -29,6 +29,9 @@ export function ShiftCard({ shift, settings, onPress, onDelete }: ShiftCardProps
     nightShiftMultiplier: 1.25,
     nightShiftStart: '22:00',
     nightShiftEnd: '05:00',
+    standardShiftStart: '09:00',
+    standardShiftEnd: '18:00',
+    standardShiftBreak: 60,
   };
 
   const income = calculateShiftIncome(shift, defaultSettings);
