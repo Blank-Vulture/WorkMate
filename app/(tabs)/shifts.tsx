@@ -26,7 +26,7 @@ export default function ShiftsScreen() {
   const [isBulkMode, setIsBulkMode] = useState(false);
   const [selectedDates, setSelectedDates] = useState<string[]>([]);
 
-  const { shifts, selectedMonth, loadShifts, setSelectedMonth, createShift, updateShift, deleteShift } = useShiftStore();
+  const { shifts, selectedMonth, loadShifts, setSelectedMonth, createShift, updateShift, deleteShift, bulkUpsertShifts } = useShiftStore();
   const { settings, loadSettings } = useSettingsStore();
   const { currentRate, loadRates, getCurrentRate } = useHourlyRateStore();
 
@@ -125,7 +125,7 @@ export default function ShiftsScreen() {
     const { standardShiftStart, standardShiftEnd, standardShiftBreak } = settings || {};
 
     if (!standardShiftStart || !standardShiftEnd) {
-      // Should not happen given defaults, but safety check
+      Alert.alert('設定エラー', '平常勤務時刻が設定されていません。\n設定画面で「平常勤務の開始・終了時刻」を設定してください。');
       return;
     }
 
@@ -145,15 +145,9 @@ export default function ShiftsScreen() {
 
     // Create shifts
     // We'll do this sequentially to ensure DB consistency
-    for (const date of selectedDates) {
-      // Check if shift already exists? The requirement implies overwriting or adding.
-      // Let's assume we skip if exists or update? 
-      // "選択した日付に平常勤務時刻を入力します" implies setting it.
-      // If a shift exists, we should probably update it or skip.
-      // For simplicity and safety, let's only create if not exists, or update if exists.
-
+    // Prepare bulk operations
+    const operations = selectedDates.map(date => {
       const existing = shifts.find(s => s.date === date);
-
       const input = {
         date,
         startTime: standardShiftStart,
@@ -162,15 +156,22 @@ export default function ShiftsScreen() {
       };
 
       if (existing) {
-        await updateShift(existing.id, input);
+        return { type: 'update' as const, id: existing.id, data: input };
       } else {
-        await createShift(input);
+        return { type: 'create' as const, data: input };
       }
-    }
+    });
 
-    setIsBulkMode(false);
-    setSelectedDates([]);
-    await loadShifts(selectedMonth.year, selectedMonth.month);
+    try {
+      await bulkUpsertShifts(operations);
+
+      Alert.alert('完了', 'シフトを一括登録しました');
+      setIsBulkMode(false);
+      setSelectedDates([]);
+    } catch (error) {
+      console.error('Bulk insert error:', error);
+      Alert.alert('エラー', 'シフトの登録に失敗しました');
+    }
   };
 
   const handleSubmit = async (input: import('@/types').ShiftInput) => {
@@ -192,12 +193,16 @@ export default function ShiftsScreen() {
     const date = new Date(selectedMonth.year, selectedMonth.month - 1, 1);
     const prev = subMonths(date, 1);
     setSelectedMonth(prev.getFullYear(), prev.getMonth() + 1);
+    setSelectedDate(null);
+    setSelectedDates([]);
   };
 
   const goToNextMonth = () => {
     const date = new Date(selectedMonth.year, selectedMonth.month - 1, 1);
     const next = addMonths(date, 1);
     setSelectedMonth(next.getFullYear(), next.getMonth() + 1);
+    setSelectedDate(null);
+    setSelectedDates([]);
   };
 
   const selectedDateShift = selectedDate ? shifts.find(s => s.date === selectedDate) : null;
@@ -238,12 +243,14 @@ export default function ShiftsScreen() {
 
         {/* Calendar */}
         <Calendar
+          key={currentMonthStr}
           current={currentMonthStr + '-01'}
           markedDates={markedDates}
           onDayPress={handleDayPress}
           onMonthChange={handleMonthChange}
           hideArrows
           hideExtraDays
+          disableMonthChange
           theme={{
             calendarBackground: theme.colors.surface,
             textSectionTitleColor: theme.colors.onSurfaceVariant,
