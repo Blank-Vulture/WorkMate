@@ -127,5 +127,5 @@ MIT License
 
 ## 作者
 
-あなたのお名前
+Hikari S. Tayasha(Blank Vulture)
 
