@@ -1,0 +1,39 @@
+{
+  "expo": {
+    "name": "WorkMate",
+    "slug": "workmate",
+    "version": "1.0.0",
+    "orientation": "portrait",
+    "icon": "./assets/icon.png",
+    "userInterfaceStyle": "automatic",
+    "newArchEnabled": true,
+    "scheme": "workmate",
+    "splash": {
+      "image": "./assets/splash-icon.png",
+      "resizeMode": "contain",
+      "backgroundColor": "#0D7377"
+    },
+    "ios": {
+      "supportsTablet": true,
+      "bundleIdentifier": "com.workmate.app"
+    },
+    "android": {
+      "adaptiveIcon": {
+        "foregroundImage": "./assets/adaptive-icon.png",
+        "backgroundColor": "#0D7377"
+      },
+      "edgeToEdgeEnabled": true,
+      "package": "com.workmate.app"
+    },
+    "web": {
+      "favicon": "./assets/favicon.png",
+      "bundler": "metro"
+    },
+    "plugins": [
+      "expo-router"
+    ],
+    "experiments": {
+      "typedRoutes": true
+    }
+  }
+}
