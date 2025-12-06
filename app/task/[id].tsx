@@ -4,7 +4,7 @@
 
 import React, { useEffect, useState } from 'react';
 import { StyleSheet, View, ScrollView, Alert } from 'react-native';
-import { Text, useTheme, Button, Chip, Divider, TextInput, Portal, Modal } from 'react-native-paper';
+import { Text, useTheme, Button, Chip, Divider, TextInput } from 'react-native-paper';
 import { useLocalSearchParams, router, Stack } from 'expo-router';
 import { format, parseISO } from 'date-fns';
 import { ja } from 'date-fns/locale';
@@ -59,7 +59,7 @@ export default function TaskDetailScreen() {
 
   const handleAddComment = async () => {
     if (!newComment.trim() || !id) return;
-    
+
     setIsAddingComment(true);
     try {
       await addComment(id, newComment.trim());
@@ -109,6 +109,21 @@ export default function TaskDetailScreen() {
 
   const statusConfig = getStatusConfig(selectedTask.status);
   const priorityConfig = getPriorityConfig(selectedTask.priority);
+
+  if (showEditForm) {
+    return (
+      <>
+        <Stack.Screen options={{ title: 'タスクを編集' }} />
+        <View style={[styles.container, { backgroundColor: theme.colors.background }]}>
+          <TaskForm
+            task={selectedTask}
+            onSubmit={handleUpdate}
+            onCancel={() => setShowEditForm(false)}
+          />
+        </View>
+      </>
+    );
+  }
 
   return (
     <>
@@ -245,23 +260,6 @@ export default function TaskDetailScreen() {
             </Button>
           </View>
         </ScrollView>
-
-        {/* Edit Form Modal */}
-        <Portal>
-          <Modal
-            visible={showEditForm}
-            onDismiss={() => setShowEditForm(false)}
-            contentContainerStyle={styles.modalContent}
-          >
-            <View style={[styles.modalInner, { backgroundColor: theme.colors.surface }]}>
-              <TaskForm
-                task={selectedTask}
-                onSubmit={handleUpdate}
-                onCancel={() => setShowEditForm(false)}
-              />
-            </View>
-          </Modal>
-        </Portal>
       </View>
     </>
   );
@@ -311,16 +309,6 @@ const styles = StyleSheet.create({
   },
   actionButton: {
     flex: 1,
-  },
-  modalContent: {
-    flex: 1,
-    justifyContent: 'center',
-    padding: 20,
-  },
-  modalInner: {
-    borderRadius: 16,
-    maxHeight: '85%',
-    overflow: 'hidden',
   },
 });
 

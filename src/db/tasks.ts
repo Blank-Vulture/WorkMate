@@ -83,6 +83,42 @@ export async function updateTask(
     });
   }
 
+  // Track title change
+  if (input.title && input.title !== existing.title) {
+    await createTaskActivity({
+      taskId: id,
+      type: 'updated',
+      content: `タイトルを「${existing.title}」から「${input.title}」に変更しました`,
+      previousValue: existing.title,
+      newValue: input.title,
+    });
+  }
+
+  // Track description change
+  if (input.description !== undefined && input.description !== existing.description) {
+    const descContent = input.description ? '説明を更新しました' : '説明を削除しました';
+    await createTaskActivity({
+      taskId: id,
+      type: 'updated',
+      content: descContent,
+      previousValue: existing.description ?? undefined,
+      newValue: input.description ?? undefined,
+    });
+  }
+
+  // Track due date change
+  if (input.dueDate !== undefined && input.dueDate !== existing.dueDate) {
+    const oldDate = existing.dueDate ? existing.dueDate : 'なし';
+    const newDate = input.dueDate ? input.dueDate : 'なし';
+    await createTaskActivity({
+      taskId: id,
+      type: 'updated',
+      content: `期限を「${oldDate}」から「${newDate}」に変更しました`,
+      previousValue: existing.dueDate ?? undefined,
+      newValue: input.dueDate ?? undefined,
+    });
+  }
+
   const completedAt = input.status === 'done' && existing.status !== 'done'
     ? now
     : input.status !== 'done'
